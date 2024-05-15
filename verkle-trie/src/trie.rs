@@ -18,6 +18,7 @@ pub struct Trie<Storage, PolyCommit: Committer> {
 impl<S: ReadWriteHigherDb, P: Committer> TrieTrait for Trie<S, P> {
     fn insert(&mut self, kv: impl Iterator<Item = (crate::Key, crate::Value)>) {
         for (key_bytes, value_bytes) in kv {
+            println!("{} {}", hex::encode(key_bytes), hex::encode(value_bytes));
             let ins = self.create_insert_instructions(key_bytes, value_bytes);
             self.process_instructions(ins);
         }

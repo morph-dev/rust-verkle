@@ -13,7 +13,7 @@ pub struct Code {
 impl Code {
     pub fn new<H: Hasher>(address: Address32, chunk_id: U256) -> Code {
         let index = (CODE_OFFSET + chunk_id) / VERKLE_NODE_WIDTH;
-        let sub_index = CODE_OFFSET + chunk_id % VERKLE_NODE_WIDTH;
+        let sub_index = (CODE_OFFSET + chunk_id) % VERKLE_NODE_WIDTH;
 
         let base_hash = hash_addr_int::<H>(address, index);
         let code_chunk_tree_key = swap_last_byte(base_hash, sub_index);
@@ -72,7 +72,7 @@ pub fn chunkify_code(code: Vec<u8>) -> Vec<Bytes32> {
             }
 
             leftover_push_data -= chunk.len();
-            remaining_pushdata_bytes.push(chunk.len());
+            remaining_pushdata_bytes.push(leftover_push_data);
             continue;
         }
 
@@ -84,7 +84,7 @@ pub fn chunkify_code(code: Vec<u8>) -> Vec<Bytes32> {
         let pc = leftover_push_data;
         let offsetted_chunk = &chunk[pc..];
         leftover_push_data = compute_leftover_push_data(offsetted_chunk) as usize;
-        remaining_pushdata_bytes.push(leftover_push_data);
+        remaining_pushdata_bytes.push(leftover_push_data.min(chunk.len()));
     }
 
     // Merge the remaining push data byte markers with the 31 byte chunks.
